@@ -20,7 +20,7 @@ export default function Home() {
       </Text>
       <Spacer y={3} />
       <Row gap={1}>
-        <Col span={4}>
+        <Col className="">
           <UploadCard />
         </Col>
         <Col span={8}>

@@ -14,7 +14,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from typing import Optional
 from typing import List
 from fastapi import HTTPException
-
+import random, string
 
 class Invoice(Document):
     id: PydanticObjectId = Field(None, alias="_id")
@@ -59,12 +59,12 @@ async def upload_invoice(file: UploadFile = File(...)) -> dict:
     # just a POC
     pdf_file_base64 = base64.b64encode(pdf_file.getvalue()).decode('utf-8')
     xml_file_base64 = base64.b64encode(xml_file.getvalue()).decode('utf-8')
-    invoice = Invoice(file_name=file.filename,
-                      pdf_file=pdf_file_base64, xml_file=xml_file_base64)
+    invoice = Invoice(file_name=file.filename + "__" + ''.join(random.choices(string.ascii_letters + string.digits, k=6))
+                      pdf_file=pdf_file_base64,
+                      xml_file=xml_file_base64)
     await invoice.insert()
     print(invoice.id)
     return {"id": str(invoice.id)}
-
 
 @app.get("/api/download/{invoice_id}")
 async def download_invoice(invoice_id: str):

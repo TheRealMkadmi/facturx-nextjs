@@ -67,7 +67,7 @@ export default function InvoiceList() {
   };
 
   if (isLoading) {
-    return <Text>Loading...</Text>;
+    return <Loading size="lg">Loading</Loading>;
   }
 
   const renderCell = (item: any, columnKey: any) => {

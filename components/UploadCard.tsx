@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useMutation, useQueryClient } from "react-query";
-import { Button, Input, Card, Text, Spacer } from "@nextui-org/react";
+import { Button, Input, Card, Text, Spacer, Progress } from "@nextui-org/react";
 
 async function uploadFile(file: string | Blob) {
   const formData = new FormData();
@@ -12,6 +12,7 @@ async function uploadFile(file: string | Blob) {
   });
 
   if (!res.ok) {
+    alert("Something went wrong");
     throw new Error("Network response was not ok");
   }
 
@@ -20,6 +21,7 @@ async function uploadFile(file: string | Blob) {
 
 export default function UploadCard() {
   const [file, setFile] = useState(null);
+  const [inputKey, setInputKey] = useState(Date.now());
   const queryClient = useQueryClient();
 
   const mutation = useMutation(uploadFile, {
@@ -28,6 +30,9 @@ export default function UploadCard() {
       link.href = `/api/download/${data.id}`;
       link.download = "invoice.xml";
       link.click();
+
+      setFile(null);
+      setInputKey(Date.now());
 
       queryClient.invalidateQueries("invoices");
     },
@@ -55,16 +60,24 @@ export default function UploadCard() {
           alignItems: "center",
         }}
       >
-        <Input type="file" onChange={handleFileChange} />
+        <Input type="file" onChange={handleFileChange} key={inputKey} />
         <Button
           auto
           shadow
           style={{ width: "100%" }}
           onClick={handleUpload}
-          disabled={!file}
+          disabled={!file || mutation.isLoading}
         >
           Upload
         </Button>
+        {mutation.isLoading && (
+          <Progress
+            indeterminated
+            value={50}
+            color="secondary"
+            status="secondary"
+          />
+        )}
       </Card.Body>
     </Card>
   );
