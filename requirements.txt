@@ -3,4 +3,4 @@ uvicorn[standard]
 factur-x
 beanie
 motor
-dotenv
+python-dotenv
