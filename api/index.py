@@ -9,7 +9,7 @@ import base64
 from fastapi.responses import StreamingResponse
 from datetime import datetime
 from beanie import Document, PydanticObjectId, init_beanie
-from pydantic import Field
+from pydantic import BaseModel, Field
 from motor.motor_asyncio import AsyncIOMotorClient
 from typing import Optional
 from typing import List
@@ -26,6 +26,12 @@ class Invoice(Document):
 
     class Settings:
         collection = "invoices"
+
+
+class InvoicePagination(BaseModel):
+    total_pages: int
+    current_page: int
+    invoices: List[Invoice]
 
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
@@ -65,15 +71,17 @@ async def download_invoice(invoice_id: str):
     invoice = await Invoice.get(invoice_id)
     xml_file = base64.b64decode(invoice.xml_file)
     return StreamingResponse(BytesIO(xml_file), media_type="application/xml", headers={
-        'Content-Disposition': f'attachment; filename={invoice.file_name.replace(".pdf", ".xml")}'
+        'Content-Disposition': f'attachment; filename={invoice.file_name.replace(".pdf", "__parsed.xml")}'
     })
 
 
-@app.get("/api/invoices", response_model=List[Invoice])
+@app.get("/api/invoices", response_model=InvoicePagination)
 async def list_invoices(page: int = 1, per_page: int = 10):
     skip = (page - 1) * per_page
+    total_invoices = await Invoice.count()
+    total_pages = total_invoices // per_page + (total_invoices % per_page > 0)
     invoices = await Invoice.find_all().skip(skip).limit(per_page).to_list()
-    return invoices
+    return InvoicePagination(total_pages=total_pages, current_page=page, invoices=invoices)
 
 
 @app.delete("/api/invoices/{invoice_id}")

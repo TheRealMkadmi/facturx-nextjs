@@ -6,11 +6,13 @@ export default function Home() {
   return (
     <Container gap={1}>
       <Spacer y={1} />
-
       <Text
         h2
         css={{
-          textGradient: "45deg, $blue600 -20%, $pink600 50%",
+          textGradient: "45deg, $purple600 -20%, $pink600 100%",
+          width: "fit-content",
+          marginRight: "auto",
+          marginLeft: "auto",
         }}
         weight="bold"
       >
