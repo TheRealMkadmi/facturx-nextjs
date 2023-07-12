@@ -41,12 +41,13 @@ export default function Home() {
       queryClient.invalidateQueries("invoices");
     },
   });
-
+  // @ts-ignore
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
 
   const handleUpload = () => {
+    // @ts-ignore
     mutation.mutate(file);
   };
 
