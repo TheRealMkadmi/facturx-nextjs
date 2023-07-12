@@ -12,6 +12,8 @@ from beanie import Document, PydanticObjectId, init_beanie
 from pydantic import Field
 from motor.motor_asyncio import AsyncIOMotorClient
 from typing import Optional
+from typing import List
+from fastapi import HTTPException
 
 
 class Invoice(Document):
@@ -65,3 +67,19 @@ async def download_invoice(invoice_id: str):
     return StreamingResponse(BytesIO(xml_file), media_type="application/xml", headers={
         'Content-Disposition': f'attachment; filename={invoice.file_name.replace(".pdf", ".xml")}'
     })
+
+
+@app.get("/api/invoices", response_model=List[Invoice])
+async def list_invoices(page: int = 1, per_page: int = 10):
+    skip = (page - 1) * per_page
+    invoices = await Invoice.find_all().skip(skip).limit(per_page).to_list()
+    return invoices
+
+
+@app.delete("/api/invoices/{invoice_id}")
+async def delete_invoice(invoice_id: str):
+    invoice = await Invoice.get(invoice_id)
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    await invoice.delete()
+    return {"message": "Invoice deleted successfully"}

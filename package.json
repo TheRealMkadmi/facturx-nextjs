@@ -16,9 +16,11 @@
     "@types/node": "20.2.4",
     "@types/react": "^18.2.14",
     "@types/react-dom": "18.2.4",
+    "axios": "^1.4.0",
     "next": "13.4.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-feather": "^2.0.10",
     "react-query": "^3.39.3"
   },
   "devDependencies": {
