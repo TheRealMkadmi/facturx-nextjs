@@ -4,3 +4,4 @@ factur-x
 beanie
 motor
 python-dotenv
+python-multipart
