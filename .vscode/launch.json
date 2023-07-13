@@ -6,7 +6,7 @@
             "type": "python",
             "request": "launch",
             "module": "uvicorn",
-            "justMyCode": true,
+            "justMyCode": false,
             "args": [
                 "api.index:app",
                 "--reload"
@@ -17,12 +17,6 @@
             "type": "node-terminal",
             "request": "launch",
             "command": "npm run next-dev"
-        },
-        {
-            "name": "Next.js: debug client-side",
-            "type": "chrome",
-            "request": "launch",
-            "url": "http://localhost:3000"
         },
         {
             "name": "Next.js: debug full stack",

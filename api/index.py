@@ -16,6 +16,10 @@ from typing import List
 from fastapi import HTTPException
 import random
 import string
+import logging
+
+# Set up root logger to output debug and higher level logs to the console
+logging.basicConfig(level=logging.DEBUG)
 
 
 class Invoice(Document):
@@ -56,12 +60,17 @@ async def startup_event():
 async def upload_invoice(file: UploadFile = File(...)) -> dict:
     pdf_file = BytesIO(await file.read())
     xml_filename, xml_string = get_xml_from_pdf(pdf_file, True)
+    if (xml_filename, xml_string) == (None, None):
+        raise HTTPException(
+            status_code=400, detail="The uploaded invoice does not contain valid facture-x data")
     xml_file = BytesIO(xml_string)
 
     # just a POC
     pdf_file_base64 = base64.b64encode(pdf_file.getvalue()).decode('utf-8')
     xml_file_base64 = base64.b64encode(xml_file.getvalue()).decode('utf-8')
-    invoice = Invoice(file_name=file.filename + "__" + ''.join(random.choices(string.ascii_letters + string.digits, k=6)),
+    file_name = file.filename.split(".")[
+        0] + "__" + ''.join(random.choices(string.ascii_letters + string.digits, k=6)) + ".pdf"
+    invoice = Invoice(file_name=file_name,
                       pdf_file=pdf_file_base64,
                       xml_file=xml_file_base64)
     await invoice.insert()
