@@ -87,6 +87,17 @@ async def download_invoice(invoice_id: str):
     })
 
 
+@app.get("/api/pdf/{invoice_id}")
+async def download_pdf(invoice_id: str):
+    invoice = await Invoice.get(invoice_id)
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    pdf_file = base64.b64decode(invoice.pdf_file)
+    return StreamingResponse(BytesIO(pdf_file), media_type="application/pdf", headers={
+        'Content-Disposition': f'attachment; filename={invoice.file_name}'
+    })
+
+
 @app.get("/api/invoices", response_model=InvoicePagination)
 async def list_invoices(page: int = 1, per_page: int = 10):
     skip = (page - 1) * per_page

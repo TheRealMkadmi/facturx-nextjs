@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "react-query";
 const queryClient = new QueryClient();
 
 const theme = createTheme({
-  type: "dark", // it could be "light" or "dark"
+  type: "light",
 });
 
 function MyApp({ Component, pageProps }: AppProps) {

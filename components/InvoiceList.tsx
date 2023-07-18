@@ -26,6 +26,7 @@ import { Trash2, Download } from "react-feather";
 import { IconButton } from "./reusable/IconButton";
 import { DeleteIcon } from "./reusable/icons/DeleteIcon";
 import { EyeIcon } from "./reusable/icons/EyeIcon";
+import { DocumentIcon } from "./reusable/icons/DocumentIcon";
 
 async function fetchInvoices(page: number) {
   const res = await axios.get(`/api/invoices?page=${page}&per_page=5`);
@@ -90,6 +91,11 @@ export default function InvoiceList() {
             <Col css={{ d: "flex" }}>
               <IconButton onClick={() => handleDelete(item._id)}>
                 <DeleteIcon size={20} fill="#FF0080" />
+              </IconButton>
+            </Col>
+            <Col css={{ d: "flex" }}>
+              <IconButton onClick={() => window.open(`/api/pdf/${item._id}`)}>
+                <DocumentIcon size={20} fill="#FF0080" />
               </IconButton>
             </Col>
           </Row>
