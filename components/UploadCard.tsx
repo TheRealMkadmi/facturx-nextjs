@@ -60,7 +60,15 @@ export default function UploadCard() {
           alignItems: "center",
         }}
       >
-        <Input type="file" onChange={handleFileChange} key={inputKey} />
+        <Input
+          type="file"
+          onChange={handleFileChange}
+          key={inputKey}
+          style={{
+            height: "auto",
+          }}
+        />
+        <Spacer y={1} />
         <Button
           auto
           shadow
@@ -71,12 +79,15 @@ export default function UploadCard() {
           Upload
         </Button>
         {mutation.isLoading && (
-          <Progress
-            indeterminated
-            value={50}
-            color="secondary"
-            status="secondary"
-          />
+          <>
+            <Spacer y={1} />
+            <Progress
+              indeterminated
+              value={50}
+              color="secondary"
+              status="secondary"
+            />
+          </>
         )}
       </Card.Body>
     </Card>
