@@ -1,25 +1,18 @@
-import {
-  JSXElementConstructor,
-  Key,
-  PromiseLikeOfReactNode,
-  ReactElement,
-  ReactNode,
-  ReactPortal,
-  useState,
-} from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
+import { Document, Page, pdfjs } from "react-pdf";
+import { useState } from "react";
 import {
-  Card,
-  Text,
-  Button,
   Modal,
+  Button,
   Grid,
   Spacer,
   Loading,
   Pagination,
   Table,
   Row,
+  Text,
   Col,
+  Card,
 } from "@nextui-org/react";
 import axios from "axios";
 import { Trash2, Download } from "react-feather";
@@ -27,6 +20,8 @@ import { IconButton } from "./reusable/IconButton";
 import { DeleteIcon } from "./reusable/icons/DeleteIcon";
 import { EyeIcon } from "./reusable/icons/EyeIcon";
 import { DocumentIcon } from "./reusable/icons/DocumentIcon";
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 async function fetchInvoices(page: number) {
   const res = await axios.get(`/api/invoices?page=${page}&per_page=5`);
@@ -38,6 +33,12 @@ async function deleteInvoice(invoiceId: any) {
   return res.data;
 }
 
+async function fetchPdf(id: string) {
+  const res = await fetch(`/api/pdf/${id}`);
+  const blob = await res.blob();
+  return URL.createObjectURL(blob);
+}
+
 const columns = [
   { name: "File Name", uid: "file_name" },
   { name: "Created At", uid: "created_at" },
@@ -46,6 +47,8 @@ const columns = [
 
 export default function InvoiceList() {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [pdfModalOpen, setPdfModalOpen] = useState(false);
+  const [pdfInvoiceId, setPdfInvoiceId] = useState<string>("");
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
 
@@ -57,6 +60,13 @@ export default function InvoiceList() {
       queryClient.invalidateQueries("invoices");
     },
   });
+
+  const { data: pdfUrl } = useQuery(
+    ["pdf", pdfInvoiceId],
+    () => fetchPdf(pdfInvoiceId!),
+    { enabled: pdfModalOpen } // Only fetch the PDF when the modal is open
+  );
+
   // @ts-ignore
   const handleDelete = (invoiceId) => {
     setSelectedInvoice(invoiceId);
@@ -65,6 +75,13 @@ export default function InvoiceList() {
   const confirmDelete = () => {
     deleteMutation.mutate(selectedInvoice);
     setSelectedInvoice(null);
+  };
+
+  const handlePdfPreview = (invoiceId: string) => {
+    if (invoiceId) {
+      setPdfInvoiceId(invoiceId);
+      setPdfModalOpen(true);
+    }
   };
 
   if (isLoading) {
@@ -94,7 +111,7 @@ export default function InvoiceList() {
               </IconButton>
             </Col>
             <Col css={{ d: "flex" }}>
-              <IconButton onClick={() => window.open(`/api/pdf/${item._id}`)}>
+              <IconButton onClick={() => handlePdfPreview(item._id)}>
                 <DocumentIcon size={20} fill="#FF0080" />
               </IconButton>
             </Col>
@@ -150,21 +167,26 @@ export default function InvoiceList() {
           />
         </Table>
       </Card.Body>
+
       <Modal
-        open={selectedInvoice !== null}
-        onClose={() => setSelectedInvoice(null)}
+        open={pdfModalOpen}
+        onClose={() => setPdfModalOpen(false)}
         style={{
           padding: "1rem",
+          height: "80%", // Adjust as needed
+          maxWidth: "none",
         }}
       >
-        <Text h3>Delete Invoice</Text>
-        <Text>Are you sure you want to delete this invoice?</Text>
+        <Text h3>PDF Preview</Text>
+        <div style={{ height: "600px", overflowY: "scroll" }}>
+          {" "}
+          {/* Make the PDF scrollable */}
+          <Document file={pdfUrl} onLoadError={console.error}>
+            <Page pageNumber={1} />
+          </Document>
+        </div>
         <Spacer y={1} />
-        {deleteMutation.isLoading ? (
-          <Loading />
-        ) : (
-          <Button onClick={confirmDelete}>Confirm</Button>
-        )}
+        <Button onClick={() => setPdfModalOpen(false)}>Close</Button>
       </Modal>
     </Card>
   );
